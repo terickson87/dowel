@@ -38,6 +38,7 @@ class CsvOutput(FileOutput):
                 self._writer = csv.DictWriter(
                     self._log_file,
                     fieldnames=self._fieldnames,
+                    restval='',
                     extrasaction='ignore')
                 self._writer.writeheader()
 
@@ -48,6 +49,36 @@ class CsvOutput(FileOutput):
                            'Did you change key sets after your first '
                            'logger.log(TabularInput)?'.format(
                                set(self._fieldnames), set(to_csv.keys())))
+                # close existing log file
+                logFileName = self._log_file.name
+                self._log_file.close()
+                self._log_file = None
+                self._writer = None
+                # Read the existing data from the log file
+                f = open(logFileName)
+                reader = csv.DictReader(f)
+                fileFieldNames = reader.fieldnames
+                fileData = []
+                for row in reader:
+                    fileData.append(row)
+                reader = None
+                f.close()
+                # Clear the old file
+                f = open(logFileName, 'w+')
+                f.close()
+                # Create the new file and writer
+                self._log_file = open(logFileName, 'w') # copy from simple_outputs.py line 62
+                allFieldnames = set(self._fieldnames | to_csv.keys())
+                self._fieldnames = allFieldnames
+                self._writer = csv.DictWriter(
+                    self._log_file,
+                    fieldnames=self._fieldnames,
+                    restval='',
+                    extrasaction='ignore')
+                self._writer.writeheader()
+                # Write the fileData
+                for dataRow in fileData:
+                    self._writer.writerow(dataRow)
 
             self._writer.writerow(to_csv)
 
