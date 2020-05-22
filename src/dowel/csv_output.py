@@ -39,37 +39,30 @@ class CsvOutput(FileOutput):
                     self._log_file,
                     fieldnames=self._fieldnames,
                     restval='',
-                    extrasaction='ignore')
+                    extrasaction='raise')
                 self._writer.writeheader()
 
             if to_csv.keys() != self._fieldnames:
-                self._warn('Inconsistent TabularInput keys detected. '
-                           'CsvOutput keys: {}. '
-                           'TabularInput keys: {}. '
-                           'Did you change key sets after your first '
-                           'logger.log(TabularInput)?'.format(
-                               set(self._fieldnames), set(to_csv.keys())))
+                # Inconsistent TabularInput keys detected
                 # close existing log file
-                logFileName = self._log_file.name
+                log_filename = self._log_file.name
                 self._log_file.close()
                 self._log_file = None
                 self._writer = None
                 # Read the existing data from the log file
-                f = open(logFileName)
+                f = open(log_filename)
                 reader = csv.DictReader(f)
-                fileFieldNames = reader.fieldnames
-                fileData = []
-                for row in reader:
-                    fileData.append(row)
+                file_fieldnames = reader.fieldnames
+                file_data = list(reader)
                 reader = None
                 f.close()
                 # Clear the old file
-                f = open(logFileName, 'w+')
+                f = open(log_filename, 'w+')
                 f.close()
                 # Create the new file and writer
-                self._log_file = open(logFileName, 'w') # copy from simple_outputs.py line 62
-                allFieldnames = set(self._fieldnames | to_csv.keys())
-                self._fieldnames = allFieldnames
+                self._log_file = open(log_filename, 'w') # copy from simple_outputs.py line 62
+                all_fieldnames = set(self._fieldnames | to_csv.keys())
+                self._fieldnames = all_fieldnames
                 self._writer = csv.DictWriter(
                     self._log_file,
                     fieldnames=self._fieldnames,
@@ -77,8 +70,8 @@ class CsvOutput(FileOutput):
                     extrasaction='ignore')
                 self._writer.writeheader()
                 # Write the fileData
-                for dataRow in fileData:
-                    self._writer.writerow(dataRow)
+                for data_row in file_data:
+                    self._writer.writerow(data_row)
 
             self._writer.writerow(to_csv)
 
