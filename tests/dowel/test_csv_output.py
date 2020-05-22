@@ -52,8 +52,8 @@ class TestCsvOutput:
         self.csv_output.dump()
 
         correct = [
-            {'foo': str(foo)},
-            {'foo': str(foo * 2)},
+            {'foo': str(foo), 'bar': ''},
+            {'foo': str(foo * 2), 'bar': str(bar * 2)},
         ]  # yapf: disable
         self.assert_csv_matches(correct)
 
